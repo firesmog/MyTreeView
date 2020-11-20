@@ -16,6 +16,7 @@ import com.readboy.mytreeview.interfaces.TreeViewItemLongClick;
 import com.readboy.mytreeview.model.TreeModel;
 import com.readboy.mytreeview.utils.AtlasUtil;
 import com.readboy.mytreeview.utils.DensityUtils;
+import com.readboy.mytreeview.utils.ViewUtil;
 import com.readboy.mytreeview.utils.log.LogUtils;
 
 import java.util.ArrayDeque;
@@ -115,52 +116,15 @@ public class TreeView extends ViewGroup implements ScaleGestureDetector.OnScaleG
         if (fatherView != null) {
             LinkedList<Node> childNodes = AtlasUtil.getSubNodeAccordId(mTreeModel.getLinkList(),root.getId(),mTreeModel.getNodeMap());
             for (Node node : childNodes) {
-
                 //连线
-                drawLineToView(canvas, fatherView, (NodeView)findNodeViewFromNodeModel(node));
-
+                ViewUtil.drawLineToView(canvas, fatherView, (NodeView)findNodeViewFromNodeModel(node),mPaint,mContext);
                 //递归
                 drawTreeLine(canvas, node);
             }
         }
     }
 
-    /**
-     * 绘制两个View直接的连线
-     *
-     * @param canvas
-     * @param from
-     * @param to
-     */
-    private void drawLineToView(Canvas canvas, View from, View to) {
-        if (to.getVisibility() == GONE) {
-            return;
-        }
 
-        mPaint.setStyle(Paint.Style.STROKE);
-
-        float width = 2f;
-
-        mPaint.setStrokeWidth(dp2px(mContext, width));
-        mPaint.setColor(mContext.getResources().getColor(R.color.colorPrimary));
-
-        NodeView fromView = (NodeView)from;
-        NodeView toView = (NodeView)to;
-        LogUtils.d("fromView = " + fromView.getName() + ", tv oder= " + fromView.getTvOrder().getMeasuredHeight() + ",tvName = " + fromView.getTvName().getMeasuredHeight() );
-        LogUtils.d("fromView = " + from.getMeasuredHeight() );
-        int top = fromView.getTop();
-        int formY = top + fromView.getMeasuredHeight() / 2 + fromView.getTvName().getHeight()/2;
-        int formX = from.getRight();
-
-        int top1 = toView.getTop();
-        int toY = top1 + toView.getMeasuredHeight() / 2 + toView.getTvName().getHeight()/2;
-        int toX = to.getLeft();
-
-        mPath.reset();
-        mPath.moveTo(formX, formY);
-        mPath.quadTo(toX - dp2px(mContext, 15), toY, toX, toY);
-        canvas.drawPath(mPath, mPaint);
-    }
 
     private void boxCallBackChange() {
         int dy = dp2px(getContext().getApplicationContext(), 20);
