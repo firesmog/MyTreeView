@@ -4,7 +4,7 @@ import java.util.List;
 
 public class AtlasMapping {
     private String name;
-    private int id;
+    private long id;
     private List<Link> links;
     private Section section;
     private List<NodeOrder> nodeOrder;
@@ -18,11 +18,11 @@ public class AtlasMapping {
         this.name = name;
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

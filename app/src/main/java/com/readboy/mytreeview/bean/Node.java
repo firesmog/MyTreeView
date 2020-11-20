@@ -1,5 +1,7 @@
 package com.readboy.mytreeview.bean;
 
+import java.util.LinkedList;
+
 public class Node {
     private String name;
     private Shape shape;
@@ -9,6 +11,17 @@ public class Node {
     private int type;
     private long id;
     private long keypoint;
+    private int order;
+    public transient boolean focus = false;
+    public int floor;
+
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
+    }
 
     public long getKeypoint() {
         return keypoint;
@@ -74,6 +87,23 @@ public class Node {
         this.id = id;
     }
 
+
+    public boolean isFocus() {
+        return focus;
+    }
+
+    public void setFocus(boolean focus) {
+        this.focus = focus;
+    }
+
+    public int getFloor() {
+        return floor;
+    }
+
+    public void setFloor(int floor) {
+        this.floor = floor;
+    }
+
     @Override
     public String toString() {
         return "Node{" +
@@ -84,6 +114,10 @@ public class Node {
                 ", font=" + font +
                 ", type=" + type +
                 ", id=" + id +
+                ", keypoint=" + keypoint +
+                ", order=" + order +
+                ", focus=" + focus +
+                ", floor=" + floor +
                 '}';
     }
 }

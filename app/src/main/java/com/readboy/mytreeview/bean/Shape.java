@@ -1,9 +1,10 @@
 package com.readboy.mytreeview.bean;
 
 public class Shape {
-    private String color;
     private int radius;
     private String type;
+    private String color;
+
 
 
     public String getColor() {

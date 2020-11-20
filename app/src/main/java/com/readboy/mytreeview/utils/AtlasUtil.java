@@ -2,13 +2,20 @@ package com.readboy.mytreeview.utils;
 
 
 import com.readboy.mytreeview.bean.AtlasBean;
+import com.readboy.mytreeview.bean.AtlasMapping;
+import com.readboy.mytreeview.bean.AtlasNode;
 import com.readboy.mytreeview.bean.Link;
 import com.readboy.mytreeview.bean.Node;
 import com.readboy.mytreeview.utils.log.LogUtils;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 public class AtlasUtil {
     private static List<Long> knowledgePointId = new ArrayList<>();
@@ -28,6 +35,68 @@ public class AtlasUtil {
             }
         }
         return result;
+    }
+
+    //找到图谱中的所有根节点
+    public static List<Node> findRootKnowledgeNode(AtlasBean bean) {
+        if (null == bean) {
+            LogUtils.d("findFirstQueNode findKnowledgeNode is null");
+            return null;
+        }
+
+        List<Node> nodeList = bean.getData().getMapping().getNodes();
+        List<Link> links = bean.getData().getMapping().getLinks();
+
+        if(null == nodeList || nodeList.size() == 1){
+            return nodeList;
+        }
+
+
+
+        Iterator<Node> iterator = nodeList.iterator();
+        inner:
+        while (iterator.hasNext()){
+               Node node = iterator.next();
+               for (Link link : links) {
+                   if(link.getTargetid() == node.getId()){
+                       iterator.remove();
+                       continue inner;
+                   }
+               }
+        }
+        return nodeList;
+    }
+
+
+
+    //根据nodeId 获取子节点
+    public static LinkedList<Node> getSubNodeAccordId(List<Link> links, long nodeId, HashMap<Long,Node> nodeMap) {
+        LinkedList<Node> nodes = new LinkedList<>();
+        for (Link link : links) {
+            if(link.getSourceid() == nodeId){
+                //targetId 才是子view
+                nodes.add(nodeMap.get(link.getTargetid()));
+            }
+        }
+        return nodes;
+    }
+
+    public static Node getParentNodeAccordId(List<Link> links, long nodeId, HashMap<Long,Node> nodeMap) {
+        Node parent = new Node();
+        for (Link link : links) {
+            if(link.getTargetid() == nodeId){
+                //targetId 才是子view
+                parent = nodeMap.get(link.getSourceid());
+            }
+        }
+        return parent;
+    }
+
+
+    public static int getOrderInNodes(AtlasMapping mapping, long id){
+        List<Long>  orders = mapping.getNodeOrder().get(0).getOrder();
+        return orders.indexOf(id);
+
     }
 
     //按照后台提供的已学考点（或知识点）的id，找出所有需要展示的链路上的节点（可重复）保存起来
@@ -141,5 +210,37 @@ public class AtlasUtil {
             }
         }
         return bean;
+    }
+
+    public static AtlasBean setNodeFloor(AtlasBean bean,List<Node> root){
+        AtlasMapping map = bean.getData().getMapping();
+        Deque<Node> deque = new ArrayDeque<>();
+        HashMap<Long,Node> hashMap = new HashMap();
+
+
+
+        for (Node node : map.getNodes()) {
+            hashMap.put(node.getId(),node);
+        }
+
+
+        for (Node node : root) {
+            deque.add(node);
+            while (!deque.isEmpty()) {
+                Node poll = deque.poll();
+                List<Node> childNodes = AtlasUtil.getSubNodeAccordId(map.getLinks(),poll.getId(),hashMap);
+                if( childNodes.size() > 0){
+                    int floor = poll.getFloor();
+                    for (Node ch : childNodes) {
+                        if(null != ch){
+                          ch.setFloor(floor+ 1);
+                            deque.push(ch);
+                      }
+                    }
+                }
+            }
+        }
+        return bean;
+
     }
 }
