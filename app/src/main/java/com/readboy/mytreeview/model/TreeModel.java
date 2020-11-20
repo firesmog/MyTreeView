@@ -100,6 +100,8 @@ public class TreeModel {
             Node lowNode = getPreNode(parentNode);
             while (lowNode != null) {
                 array.add(lowNode);
+                LogUtils.d("lowNode = 11111 " + lowNode.getName() + ", addNode = " + addNode.getName());
+
                 lowNode = getPreNode(lowNode);
             }
             parentNode = AtlasUtil.getParentNodeAccordId(linkList,parentNode.getId(),nodeMap);
@@ -135,7 +137,7 @@ public class TreeModel {
                 }
             }
 
-            if (find != null && find.getFloor() != midPreNode.getFloor()) {
+            if (find != null && (find.getFloor()%2) != (midPreNode.getFloor()%2)) {
                 find = null;
             }
         }

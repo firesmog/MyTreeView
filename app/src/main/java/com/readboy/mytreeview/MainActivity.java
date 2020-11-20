@@ -54,8 +54,8 @@ public class MainActivity extends AppCompatActivity {
         model.setRootNode(rootNode);
         model.setNodeMap(models);
         editMapTreeView.setTreeModel(model);
-        int dx = DensityUtils.dp2px(getApplicationContext(), 20);
-        int dy = DensityUtils.dp2px(getApplicationContext(), 20);
+        int dx = DensityUtils.dp2px(getApplicationContext(), 30);
+        int dy = DensityUtils.dp2px(getApplicationContext(), 30);
         int screenHeight = DensityUtils.dp2px(getApplicationContext(), 720);
         editMapTreeView.setTreeLayoutManager(new RightTreeLayoutManager(dx, dy, screenHeight));
     }

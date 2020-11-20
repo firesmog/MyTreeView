@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
@@ -50,8 +51,8 @@ public class TreeView extends ViewGroup implements ScaleGestureDetector.OnScaleG
         //抗锯齿
         mPaint.setAntiAlias(true);
 
+
     }
-    int count = 0;
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -61,14 +62,14 @@ public class TreeView extends ViewGroup implements ScaleGestureDetector.OnScaleG
         }
         mWidth = getMeasuredWidth();
         mHeight = getMeasuredHeight();
+        LogUtils.d("current Node next rootTreeViewLayout= " + mHeight + ",width = " + mWidth);
+
         if (mTreeLayoutManager != null && mTreeModel != null) {
             //树形结构的分布
-            LogUtils.d("current Node next rootTreeViewLayout= " + count++);
-
             mTreeLayoutManager.onTreeLayout(this);
             ViewBox viewBox = mTreeLayoutManager.onTreeLayoutCallBack();
             //setMeasuredDimension(viewBox.right+Math.abs(viewBox.left),viewBox.bottom+Math.abs(viewBox.top));
-            setMeasuredDimension(1000,1000);
+            setMeasuredDimension(viewBox.right+Math.abs(viewBox.left),viewBox.bottom+Math.abs(viewBox.top));
             boxCallBackChange();
         }
     }
@@ -90,7 +91,7 @@ public class TreeView extends ViewGroup implements ScaleGestureDetector.OnScaleG
     protected void dispatchDraw(Canvas canvas) {
         super.dispatchDraw(canvas);
         if (mTreeModel != null) {
-            drawTreeLine(canvas, mTreeModel.getRootNode().get(0));
+            drawTreeLine(canvas, mTreeModel.getRootNode().get(1));
         }
 
     }
@@ -107,7 +108,7 @@ public class TreeView extends ViewGroup implements ScaleGestureDetector.OnScaleG
             LinkedList<Node> childNodes = AtlasUtil.getSubNodeAccordId(mTreeModel.getLinkList(),root.getId(),mTreeModel.getNodeMap());
             for (Node node : childNodes) {
                 //连线
-                //LogUtils.d("drawTreeLine father = "  + fatherView.getName() + ", order = " + fatherView.getOrder());
+                LogUtils.d("drawTreeLine father = "  + fatherView.getName() + ", order = " + fatherView.getOrder());
                 ViewUtil.drawLineToView(canvas, fatherView, (NodeView)findNodeViewFromNodeModel(node),mPaint,mContext);
                 //递归
                 drawTreeLine(canvas, node);
@@ -219,7 +220,6 @@ public class TreeView extends ViewGroup implements ScaleGestureDetector.OnScaleG
         }
     }
 
-    int count1 = 0 ;
     private View addNodeViewToGroup(Node poll) {
         final NodeView nodeView = new NodeView(mContext,null);
         nodeView.setFocusable(true);
@@ -242,7 +242,6 @@ public class TreeView extends ViewGroup implements ScaleGestureDetector.OnScaleG
             }
         });
 
-        LogUtils.d("nodeView = " + nodeView.getTvName().getText() + "count = " + ++count);
         this.addView(nodeView);
         return nodeView;
     }
