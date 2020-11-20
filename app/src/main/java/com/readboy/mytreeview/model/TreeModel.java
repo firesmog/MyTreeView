@@ -63,14 +63,14 @@ public class TreeModel {
         this.mForTreeItem = forTreeItem;
     }
 
-    public void ergodicTreeInWith(int msg,Node node) {
+    public void ergodicTreeInWith(int msg,Node node,int index) {
         Deque<Node> queue = new ArrayDeque<>();
         Node curNode = node;
         queue.add(node);
         while (!queue.isEmpty()) {
             curNode =  queue.poll();
             if (mForTreeItem != null) {
-                mForTreeItem.next(msg, curNode);
+                mForTreeItem.next(msg, curNode,index);
             }
             LinkedList<Node> childNodes = (LinkedList<Node>) AtlasUtil.getSubNodeAccordId(linkList,curNode.getId(),nodeMap);;
             if (childNodes.size() > 0) {
@@ -82,7 +82,7 @@ public class TreeModel {
     public ArrayList<Node> getAllLowNodes(Node addNode) {
         ArrayList<Node> array = new ArrayList<>();
         Node parentNode = AtlasUtil.getParentNodeAccordId(linkList,addNode.getId(),nodeMap);
-        while (parentNode != null) {
+        while (parentNode != null && !TextUtils.isEmpty(parentNode.getName())) {
             Node lowNode = getLowNode(parentNode);
             while (lowNode != null) {
                 array.add(lowNode);
@@ -93,6 +93,56 @@ public class TreeModel {
         return array;
     }
 
+    public ArrayList<Node> getAllPreNodes(Node addNode) {
+        ArrayList<Node> array = new ArrayList<>();
+        Node parentNode = AtlasUtil.getParentNodeAccordId(linkList,addNode.getId(),nodeMap);
+        while (parentNode != null && !TextUtils.isEmpty(parentNode.getName())) {
+            Node lowNode = getPreNode(parentNode);
+            while (lowNode != null) {
+                array.add(lowNode);
+                lowNode = getPreNode(lowNode);
+            }
+            parentNode = AtlasUtil.getParentNodeAccordId(linkList,parentNode.getId(),nodeMap);
+        }
+        return array;
+    }
+
+    private Node getPreNode(Node midPreNode) {
+
+        Node parentNode = AtlasUtil.getParentNodeAccordId(linkList,midPreNode.getId(),nodeMap);
+        Node find = null;
+
+        if (parentNode != null && AtlasUtil.getSubNodeAccordId(linkList,parentNode.getId(),nodeMap).size() > 0) {
+
+            Deque<Node> queue = new ArrayDeque<>();
+            Node rootNode = parentNode;
+            queue.add(rootNode);
+
+            while (!queue.isEmpty()) {
+                rootNode = (Node) queue.poll();
+                //到了该元素
+                if (rootNode == midPreNode) {
+                    //返回之前的值
+                    break;
+                }
+
+                find = rootNode;
+                LinkedList<Node> childNodes = AtlasUtil.getSubNodeAccordId(linkList,rootNode.getId(),nodeMap);
+                if (childNodes.size() > 0) {
+                    for (Node item : childNodes) {
+                        queue.add(item);
+                    }
+                }
+            }
+
+            if (find != null && find.getFloor() != midPreNode.getFloor()) {
+                find = null;
+            }
+        }
+        return find;
+    }
+
+
     /**
      * 同一个父节点的上下
      * 当新增一个节点时，该节点上面的元素及view都不发生变化，仅需要修改该节点下面的坐标
@@ -102,6 +152,7 @@ public class TreeModel {
     private Node getLowNode(Node midPreNode) {
         Node find = null;
         Node parentNode = AtlasUtil.getParentNodeAccordId(linkList,midPreNode.getId(),nodeMap);
+
         if (parentNode != null && !TextUtils.isEmpty(parentNode.getName()) && AtlasUtil.getSubNodeAccordId(linkList,parentNode.getId(),nodeMap).size() >= 2) {
             Log.d("LZYYYY","midPreNode = " + midPreNode.toString() + ", parent = " + parentNode.toString());
             Deque<Node> queue = new ArrayDeque<>();
@@ -132,19 +183,18 @@ public class TreeModel {
 
 
 
-    public void ergodicTreeInDeep(int msg) {
-        /*Stack<NodeModel<T>> stack = new Stack<>();
-        NodeModel<T> rootNode = getRootNode();
+    public void ergodicTreeInDeep(int msg,Node rootNode,int index) {
+        Stack<Node> stack = new Stack<>();
         stack.add(rootNode);
         while (!stack.isEmpty()) {
-            NodeModel<T> pop = stack.pop();
+            Node pop = stack.pop();
             if (mForTreeItem != null) {
-                mForTreeItem.next(msg, pop);
+                mForTreeItem.next(msg, pop,index);
             }
-            LinkedList<NodeModel<T>> childNodes = pop.getChildNodes();
-            for (NodeModel<T> item : childNodes) {
+            LinkedList<Node> childNodes = AtlasUtil.getSubNodeAccordId(linkList,pop.getId(),nodeMap);
+            for (Node item : childNodes) {
                 stack.add(item);
             }
-        }*/
+        }
     }
 }

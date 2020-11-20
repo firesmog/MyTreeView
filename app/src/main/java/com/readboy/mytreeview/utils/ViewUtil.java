@@ -67,8 +67,7 @@ public class ViewUtil {
 
         NodeView fromView = (NodeView)from;
         NodeView toView = (NodeView)to;
-        LogUtils.d("fromView = " + fromView.getName() + ", tv oder= " + fromView.getTvOrder().getMeasuredHeight() + ",tvName = " + fromView.getTvName().getMeasuredHeight() );
-        LogUtils.d("fromView = " + from.getMeasuredHeight() );
+       // LogUtils.d("fromView = " + from.getMeasuredHeight() );
         int top = fromView.getTop();
         int formY = top + fromView.getMeasuredHeight() / 2 + fromView.getTvName().getHeight()/2;
         int formX = from.getRight();

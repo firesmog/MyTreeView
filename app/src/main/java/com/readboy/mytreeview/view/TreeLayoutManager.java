@@ -21,5 +21,5 @@ public interface TreeLayoutManager {
      * @param treeView
      * @param next
      */
-    void correctLayout(TreeView treeView, NodeView next);
+    void correctLayout(TreeView treeView, NodeView next,int index);
 }

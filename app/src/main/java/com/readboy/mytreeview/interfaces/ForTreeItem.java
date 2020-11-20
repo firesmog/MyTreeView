@@ -10,5 +10,5 @@ import java.io.Serializable;
  */
 
 public interface ForTreeItem{
-    void next(int msg, Node next);
+    void next(int msg, Node next,int index);
 }
