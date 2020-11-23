@@ -13,8 +13,10 @@ import com.readboy.mytreeview.utils.log.LogUtils;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by owant on 08/03/2017.
@@ -25,11 +27,17 @@ public class RightTreeLayoutManager implements TreeLayoutManager {
     final int msg_correct_layout = 2;
     final int msg_box_call_back = 3;
     private int curIndex;
+    private HashMap<Integer,ViewBox> boxHashMap = new HashMap<>();
 
     private ViewBox mViewBox;
     private int mDy;
     private int mDx;
     private int mHeight;
+
+    int lr = 0;
+    int tr = 0;
+    int rr = 0;
+    int br = 0;
 
     public RightTreeLayoutManager(int dx, int dy, int height) {
         mViewBox = new ViewBox();
@@ -54,16 +62,14 @@ public class RightTreeLayoutManager implements TreeLayoutManager {
 
         //遍历每个根节点，逐个处理
         for (Node node : rootNode) {
-            if(rootNode.indexOf(node) != 1){
-                continue;
-            }
             View rootView = treeView.findNodeViewFromNodeModel(node);
             int index = rootNode.indexOf(node);
 
             if (rootView != null) {
                 //根节点位置
-                rootTreeViewLayout((NodeView) rootView,treeView);
+                rootTreeViewLayout((NodeView) rootView,treeView,index);
             }
+
 
             //基本布局
             mTreeModel.ergodicTreeInWith(msg_standard_layout,node,index);
@@ -71,7 +77,6 @@ public class RightTreeLayoutManager implements TreeLayoutManager {
             mTreeModel.ergodicTreeInWith(msg_correct_layout,node,index);
             mViewBox.clear();
             mTreeModel.ergodicTreeInDeep(msg_box_call_back,node,index);
-            return;
         }
     }
 
@@ -98,7 +103,7 @@ public class RightTreeLayoutManager implements TreeLayoutManager {
             //纠正
            correctLayout(treeView, (NodeView) view,index);
         } else if (msg == msg_box_call_back) {
-
+            mViewBox.setCurIndex(index );
             //View的大小变化
             int left = view.getLeft();
             int top = view.getTop();
@@ -122,6 +127,9 @@ public class RightTreeLayoutManager implements TreeLayoutManager {
             if (right > mViewBox.right) {
                 mViewBox.right = right;
             }
+            LogUtils.d(" rootTreeViewLayout  NodeView = , curBox = " + mViewBox.toString());
+
+            boxHashMap.put(index,mViewBox);
         }
     }
 
@@ -161,121 +169,16 @@ public class RightTreeLayoutManager implements TreeLayoutManager {
         }
     }
 
-    /**
-     * 标准分布
-     * todo Lzy 布局精髓所在
-     * @param treeView
-     * @param rootView
-     */
-   /* private void standardLayout(TreeView treeView, NodeView rootView) {
-        Node treeNode = rootView.getNode();
-        TreeModel mTreeModel =  treeView.getTreeModel();
-        if (treeNode != null) {
-            //所有的子节点
-            LinkedList<Node> childNodes = (LinkedList<Node>) AtlasUtil.getSubNodeAccordId(mTreeModel.getLinkList(),treeNode.getId(),mTreeModel.getNodeMap());
-            int size = childNodes.size();
-            int mid = size / 2;
-            int r = size % 2;
 
-            //基线
-            //        b
-            //    a-------
-            //        c
-            //
-            int left = rootView.getRight() + mDx;
-            int top = rootView.getTop() + rootView.getMeasuredHeight() / 2;
-
-            int right = 0;
-            int bottom = 0;
-
-            if (size == 0) {
-                return;
-            } else if (size == 1) {
-                NodeView midChildNodeView = (NodeView) treeView.findNodeViewFromNodeModel(childNodes.get(0));
-                top = top - midChildNodeView.getMeasuredHeight() / 2;
-                right = left + midChildNodeView.getMeasuredWidth();
-                bottom = top + midChildNodeView.getMeasuredHeight();
-                midChildNodeView.layout(left, top, right, bottom);
-
-
-            } else {
-                int topLeft = left;
-                int topTop = top;
-                int topRight = 0;
-                int topBottom = 0;
-
-                int bottomLeft = left;
-                int bottomTop = top;
-                int bottomRight = 0;
-                int bottomBottom = 0;
-
-                if (r == 0) {//偶数
-                    for (int i = mid - 1; i >= 0; i--) {
-                        //找出上下两个子节点
-                        NodeView topView = (NodeView) treeView.findNodeViewFromNodeModel(childNodes.get(i));
-                        NodeView bottomView = (NodeView) treeView.findNodeViewFromNodeModel(childNodes.get(size - i - 1));
-
-
-                        //从中间往上下两边扩散画图
-                        if (i == mid - 1) {
-                            topTop = topTop - mDy / 2 - topView.getMeasuredHeight();
-                            topRight = topLeft + topView.getMeasuredWidth();
-                            topBottom = topTop + topView.getMeasuredHeight();
-
-                            bottomTop = bottomTop + mDy / 2;
-                            bottomRight = bottomLeft + bottomView.getMeasuredWidth();
-                            bottomBottom = bottomTop + bottomView.getMeasuredHeight();
-                        } else {
-                            topTop = topTop - mDy - topView.getMeasuredHeight();
-                            topRight = topLeft + topView.getMeasuredWidth();
-                            topBottom = topTop + topView.getMeasuredHeight();
-
-                            bottomTop = bottomTop + mDy;
-                            bottomRight = bottomLeft + bottomView.getMeasuredWidth();
-                            bottomBottom = bottomTop + bottomView.getMeasuredHeight();
-                        }
-
-                        topView.layout(topLeft, topTop, topRight, topBottom);
-                        bottomView.layout(bottomLeft, bottomTop, bottomRight, bottomTop);
-
-                        bottomTop = bottomView.getBottom();
-                    }
-
-                } else {
-                    NodeView midView = (NodeView) treeView.findNodeViewFromNodeModel(childNodes.get(mid));
-                    midView.layout(left, top - midView.getMeasuredHeight() / 2, left + midView.getMeasuredWidth(),
-                            top - midView.getMeasuredHeight() / 2 + midView.getMeasuredHeight());
-
-                    topTop = midView.getTop();
-                    bottomTop = midView.getBottom();
-
-                    for (int i = mid - 1; i >= 0; i--) {
-                        NodeView topView = (NodeView) treeView.findNodeViewFromNodeModel(childNodes.get(i));
-                        NodeView bottomView = (NodeView) treeView.findNodeViewFromNodeModel(childNodes.get(size - i - 1));
-
-                        topTop = topTop - mDy - topView.getMeasuredHeight();
-                        topRight = topLeft + topView.getMeasuredWidth();
-                        topBottom = topTop + topView.getMeasuredHeight();
-
-                        bottomTop = bottomTop + mDy;
-                        bottomRight = bottomLeft + bottomView.getMeasuredWidth();
-                        bottomBottom = bottomTop + bottomView.getMeasuredHeight();
-
-                        topView.layout(topLeft, topTop, topRight, topBottom);
-                        bottomView.layout(bottomLeft, bottomTop, bottomRight, bottomBottom);
-                        bottomTop = bottomView.getBottom();
-                    }
-                }
-            }
-        }
-    }*/
 
 
 
     private void standardLayout(TreeView treeView, NodeView rootView) {
         Node treeNode = rootView.getNode();
         TreeModel mTreeModel =  treeView.getTreeModel();
+
         if (treeNode != null) {
+
             //所有的子节点
             LinkedList<Node> childNodes = (LinkedList<Node>) AtlasUtil.getSubNodeAccordId(mTreeModel.getLinkList(),treeNode.getId(),mTreeModel.getNodeMap());
             int size = childNodes.size();
@@ -406,13 +309,22 @@ public class RightTreeLayoutManager implements TreeLayoutManager {
      *
      * @param rootView
      */
-    private void rootTreeViewLayout(NodeView rootView,TreeView treeView) {
-        int lr = mDy;
-        int tr = mDx  ;
-        int rr = lr + rootView.getMeasuredWidth();
-        int br = tr + rootView.getMeasuredHeight() ;
+    private void rootTreeViewLayout(NodeView rootView,TreeView treeView,int curIndex) {
+        lr = mDy;
+        rr = lr + rootView.getMeasuredWidth();
+        if(curIndex == 0){
+            tr = mDx   ;
+            br = tr + rootView.getMeasuredHeight();
+            rootView.layout(lr, tr, rr, br);
+            return;
+        }
 
+        ViewBox curBox = boxHashMap.get(curIndex -1);
+        tr = mDx  + curBox.bottom  ;
+        br = tr + rootView.getMeasuredHeight();
         rootView.layout(lr, tr, rr, br);
+
+        LogUtils.d(" rootTreeViewLayout  NodeView = " +rootView.getName());
 
     }
 }

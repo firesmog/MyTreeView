@@ -6,11 +6,14 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.readboy.mytreeview.bean.Node;
+import com.readboy.mytreeview.control.MoveAndScaleHandler;
 import com.readboy.mytreeview.interfaces.TreeViewItemClick;
 import com.readboy.mytreeview.interfaces.TreeViewItemLongClick;
 import com.readboy.mytreeview.model.TreeModel;
@@ -32,10 +35,16 @@ public class TreeView extends ViewGroup implements ScaleGestureDetector.OnScaleG
     private int mHeight;
     public TreeModel mTreeModel;
     private TreeLayoutManager mTreeLayoutManager;
+    private GestureDetector mGestureDetector;
+
     //点击事件
     private TreeViewItemClick mTreeViewItemClick;
     //长按
     private TreeViewItemLongClick mTreeViewItemLongClick;
+
+    private MoveAndScaleHandler mMoveAndScaleHandler;
+
+
     //最近点击的item
     private Node mCurrentFocus;
     public TreeView(Context context) {
@@ -50,7 +59,15 @@ public class TreeView extends ViewGroup implements ScaleGestureDetector.OnScaleG
         mPaint = new Paint();
         //抗锯齿
         mPaint.setAntiAlias(true);
-
+        mMoveAndScaleHandler = new MoveAndScaleHandler(context, this);
+        //点击空白处
+        mGestureDetector = new GestureDetector(mContext, new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public boolean onDoubleTap(MotionEvent e) {
+                Log.d("LZY","double click here " );
+                return true;
+            }
+        });
 
     }
 
@@ -68,7 +85,6 @@ public class TreeView extends ViewGroup implements ScaleGestureDetector.OnScaleG
             //树形结构的分布
             mTreeLayoutManager.onTreeLayout(this);
             ViewBox viewBox = mTreeLayoutManager.onTreeLayoutCallBack();
-            //setMeasuredDimension(viewBox.right+Math.abs(viewBox.left),viewBox.bottom+Math.abs(viewBox.top));
             setMeasuredDimension(viewBox.right+Math.abs(viewBox.left),viewBox.bottom+Math.abs(viewBox.top));
             boxCallBackChange();
         }
@@ -91,9 +107,18 @@ public class TreeView extends ViewGroup implements ScaleGestureDetector.OnScaleG
     protected void dispatchDraw(Canvas canvas) {
         super.dispatchDraw(canvas);
         if (mTreeModel != null) {
-            drawTreeLine(canvas, mTreeModel.getRootNode().get(1));
+            for (Node node : mTreeModel.getRootNode()) {
+                drawTreeLine(canvas,node);
+            }
         }
 
+    }
+
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        mGestureDetector.onTouchEvent(event);
+        return mMoveAndScaleHandler.onTouchEvent(event);
     }
 
     /**
@@ -135,10 +160,12 @@ public class TreeView extends ViewGroup implements ScaleGestureDetector.OnScaleG
         this.setLayoutParams(layoutParams);
 
         //移动节点
-        Node rootNode = getTreeModel().getRootNode().get(0);
-        if (rootNode != null) {
-            moveNodeLayout(this, (NodeView) findNodeViewFromNodeModel(rootNode), Math.abs(box.top));
+        for (Node node : getTreeModel().getRootNode()) {
+            if (node != null) {
+                moveNodeLayout(this, (NodeView) findNodeViewFromNodeModel(node), Math.abs(box.top));
+            }
         }
+
     }
 
     /**

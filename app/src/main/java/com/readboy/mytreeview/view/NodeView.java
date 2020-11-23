@@ -55,7 +55,6 @@ public class NodeView extends RelativeLayout {
         nodeId = node.getId();
         initTvName();
         initTvOrder();
-        LogUtils.d("setNode == name =  " + name +  ",order = " + orderSize + ", orderSize = " + nodeBackground + ", shape = " + nodeShape);
 
     }
 
