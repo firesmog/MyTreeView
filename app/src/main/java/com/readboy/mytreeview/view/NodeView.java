@@ -115,20 +115,17 @@ public class NodeView extends RelativeLayout {
         tvOrder.setTextColor(numberColor);
         tvOrder.setTextSize(orderSize);
         //创建Drawable对象
-        int[] colors = {0xFFFF9326,0xFFFFC54E};
-        GradientDrawable drawable=new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,colors);
+        int[] colors = {context.getResources().getColor(R.color.color_31cfff),context.getResources().getColor(R.color.color_0097e6)};
+        GradientDrawable drawable=new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,colors);
 
         if(Constants.SHAPE_RECTANGLE.equals(nodeShape)){
             drawable.setShape(RECTANGLE);
-            drawable.setGradientType(RECTANGLE);
 
         }else {
             drawable.setShape(OVAL);
             drawable.setGradientRadius(nodeRadius);
             tvOrder.setWidth((int) tvOrderWidth);
             tvOrder.setHeight((int) tvOrderWidth);
-            drawable.setGradientType(OVAL);
-
         }
 
         tvOrder.setBackground(drawable);

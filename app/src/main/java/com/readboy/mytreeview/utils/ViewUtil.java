@@ -75,6 +75,7 @@ public class ViewUtil {
         int top1 = toView.getTop();
         int toY = top1 + toView.getMeasuredHeight() / 2 + toView.getTvName().getHeight()/2;
         int toX = to.getLeft();
+        mPaint.setAlpha(70);
         canvas.drawLine(formX, formY,toX, toY, mPaint);
         mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         drawTrangle(canvas, mPaint, formX, formY, toX, toY, 10, 3);

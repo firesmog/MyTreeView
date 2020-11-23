@@ -23,6 +23,7 @@ import com.readboy.mytreeview.utils.log.LogUtils;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -85,8 +86,9 @@ public class TreeView extends ViewGroup implements ScaleGestureDetector.OnScaleG
             //树形结构的分布
             mTreeLayoutManager.onTreeLayout(this);
             ViewBox viewBox = mTreeLayoutManager.onTreeLayoutCallBack();
-            setMeasuredDimension(viewBox.right+Math.abs(viewBox.left),viewBox.bottom+Math.abs(viewBox.top));
             boxCallBackChange();
+            setMeasuredDimension(viewBox.right+Math.abs(viewBox.left),viewBox.bottom+Math.abs(viewBox.top));
+
         }
     }
 
@@ -109,6 +111,13 @@ public class TreeView extends ViewGroup implements ScaleGestureDetector.OnScaleG
         if (mTreeModel != null) {
             for (Node node : mTreeModel.getRootNode()) {
                 drawTreeLine(canvas,node);
+                ViewBox viewBox = mTreeLayoutManager.onTreeLayoutCallBack();
+
+                //todo Lzy 画出边缘
+                mPaint.setStyle(Paint.Style.STROKE);
+                canvas.drawRect(viewBox.left,viewBox.top,viewBox.right,viewBox.bottom, mPaint);
+                mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+
             }
         }
 
@@ -158,16 +167,90 @@ public class TreeView extends ViewGroup implements ScaleGestureDetector.OnScaleG
         layoutParams.height = h > getMeasuredHeight() ? h + moreWidth : getMeasuredHeight();
         layoutParams.width = w > getMeasuredWidth() ? w + moreWidth : getMeasuredWidth();
         this.setLayoutParams(layoutParams);
+        int beforeGap = 0;
+
+        List<Node> nodes = getTreeModel().getRootNode();
 
         //移动节点
-        for (Node node : getTreeModel().getRootNode()) {
-            if (node != null) {
-                moveNodeLayout(this, (NodeView) findNodeViewFromNodeModel(node), Math.abs(box.top));
+        for (int i = 0 ; i <  nodes.size(); i++){
+            Node node = nodes.get(i);
+            List<Node > nodeList = AtlasUtil.getSubNodeAccordId(mTreeModel.getLinkList(),node.getId(),mTreeModel.getNodeMap());
+            int min = findMinTopNode(node);
+            int rootTop = findNodeViewFromNodeModel(node).getTop();
+            LogUtils.d("maxNode = beforeGap2222 =" + min  + "name  = " + node.getName() + ",rootTop = " + rootTop);
+
+            //todo Lzy移动根节点，相当于该树所有节点向下移动了该距离
+            if(i == 0){
+                moveNodeLayout(this, (NodeView) findNodeViewFromNodeModel(node), Math.abs(min));
+                continue;
+            }
+             int curGap =  Math.abs(Math.abs(rootTop ) - Math.abs(min));
+            if(min < ((RightTreeLayoutManager)mTreeLayoutManager).getBoxHashMap().get(i-1).bottom){
+                moveNodeLayout(this, (NodeView) findNodeViewFromNodeModel(node), curGap );
+                beforeGap = curGap + beforeGap;
+                LogUtils.d("maxNode = beforeGap =" +curGap + "name  = " + node.getName());
+
+            }else {
+                LogUtils.d("maxNode = beforeGap =" + beforeGap + "name  = " + node.getName());
+
+                moveNodeLayout(this, (NodeView) findNodeViewFromNodeModel(node), curGap );
+
             }
         }
 
+        Node lastRootNode = nodes.get(nodes.size() -1);
+        NodeView maxNode= findMaxTopNode(lastRootNode);
+        viewBox.bottom = maxNode.getBottom();
+        viewBox.right = ((RightTreeLayoutManager)mTreeLayoutManager).getMaxRight();
     }
 
+
+
+
+    private NodeView findMaxTopNode(Node rootNode){
+        Deque<Node> queue = new ArrayDeque<>();
+        NodeView result = new NodeView(mContext);
+        Node curNode = new Node();
+        queue.add(rootNode);
+        int max = findNodeViewFromNodeModel(rootNode).getTop();
+        while (!queue.isEmpty()) {
+            curNode =  queue.poll();
+            NodeView curView = (NodeView) findNodeViewFromNodeModel(curNode);
+            int curTop = curView.getTop();
+            if(curTop > max){
+                max = curTop;
+                result = curView;
+            }
+            LinkedList<Node> childNodes = (LinkedList<Node>) AtlasUtil.getSubNodeAccordId(mTreeModel.getLinkList(),curNode.getId(),mTreeModel.getNodeMap());;
+            if (childNodes.size() > 0) {
+                queue.addAll(childNodes);
+            }
+        }
+        return result;
+    }
+
+    private int findMinTopNode(Node rootNode){
+        Deque<Node> queue = new ArrayDeque<>();
+        Node curNode = new Node();
+        queue.add(rootNode);
+        int min = findNodeViewFromNodeModel(rootNode).getTop();
+
+        while (!queue.isEmpty()) {
+            curNode =  queue.poll();
+            NodeView curView = (NodeView) findNodeViewFromNodeModel(curNode);
+            int curTop = curView.getTop();
+            if(curTop < min){
+                min = curTop;
+                LogUtils.d("maxNode = beforeGap1111 =" + min  + "name  = " + rootNode.getName());
+
+            }
+            LinkedList<Node> childNodes = (LinkedList<Node>) AtlasUtil.getSubNodeAccordId(mTreeModel.getLinkList(),curNode.getId(),mTreeModel.getNodeMap());;
+            if (childNodes.size() > 0) {
+                queue.addAll(childNodes);
+            }
+        }
+        return min;
+    }
     /**
      * 移动
      *

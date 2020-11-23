@@ -38,6 +38,7 @@ public class RightTreeLayoutManager implements TreeLayoutManager {
     int tr = 0;
     int rr = 0;
     int br = 0;
+    private int maxRight = 0;
 
     public RightTreeLayoutManager(int dx, int dy, int height) {
         mViewBox = new ViewBox();
@@ -101,7 +102,7 @@ public class RightTreeLayoutManager implements TreeLayoutManager {
             standardLayout(treeView, (NodeView) view);
         } else if (msg == msg_correct_layout) {
             //纠正
-           correctLayout(treeView, (NodeView) view,index);
+           //correctLayout(treeView, (NodeView) view,index);
         } else if (msg == msg_box_call_back) {
             mViewBox.setCurIndex(index );
             //View的大小变化
@@ -127,7 +128,12 @@ public class RightTreeLayoutManager implements TreeLayoutManager {
             if (right > mViewBox.right) {
                 mViewBox.right = right;
             }
-            LogUtils.d(" rootTreeViewLayout  NodeView = , curBox = " + mViewBox.toString());
+
+            if(right > maxRight){
+                maxRight = right;
+            }
+
+            LogUtils.d(" rootTreeViewLayout  NodeView = " + next.getName() + " curBox = " + mViewBox.toString() );
 
             boxHashMap.put(index,mViewBox);
         }
@@ -204,8 +210,6 @@ public class RightTreeLayoutManager implements TreeLayoutManager {
                 right = left + midChildNodeView.getMeasuredWidth();
                 bottom = top + midChildNodeView.getMeasuredHeight();
                 midChildNodeView.layout(left, top, right, bottom);
-
-
             } else {
                 int topLeft = left;
                 int topTop = top;
@@ -310,21 +314,31 @@ public class RightTreeLayoutManager implements TreeLayoutManager {
      * @param rootView
      */
     private void rootTreeViewLayout(NodeView rootView,TreeView treeView,int curIndex) {
-        lr = mDy;
+        lr = mDx;
         rr = lr + rootView.getMeasuredWidth();
         if(curIndex == 0){
-            tr = mDx   ;
+            tr = mDy   ;
             br = tr + rootView.getMeasuredHeight();
             rootView.layout(lr, tr, rr, br);
             return;
         }
 
         ViewBox curBox = boxHashMap.get(curIndex -1);
-        tr = mDx  + curBox.bottom  ;
+        tr = mDy  + curBox.bottom  ;
         br = tr + rootView.getMeasuredHeight();
         rootView.layout(lr, tr, rr, br);
-
-        LogUtils.d(" rootTreeViewLayout  NodeView = " +rootView.getName());
-
     }
+
+    public HashMap<Integer, ViewBox> getBoxHashMap() {
+        return boxHashMap;
+    }
+
+    public void setBoxHashMap(HashMap<Integer, ViewBox> boxHashMap) {
+        this.boxHashMap = boxHashMap;
+    }
+
+    public int getMaxRight() {
+        return maxRight;
+    }
+
 }
