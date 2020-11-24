@@ -42,7 +42,6 @@ public class RightTreeLayoutManager implements TreeLayoutManager {
 
     public RightTreeLayoutManager(int dx, int dy, int height) {
         mViewBox = new ViewBox();
-
         this.mDx = dx;
         this.mDy = dy;
         this.mHeight = height;
@@ -104,7 +103,7 @@ public class RightTreeLayoutManager implements TreeLayoutManager {
             //纠正
            //correctLayout(treeView, (NodeView) view,index);
         } else if (msg == msg_box_call_back) {
-            mViewBox.setCurIndex(index );
+            ViewBox box = new ViewBox();
             //View的大小变化
             int left = view.getLeft();
             int top = view.getTop();
@@ -132,10 +131,15 @@ public class RightTreeLayoutManager implements TreeLayoutManager {
             if(right > maxRight){
                 maxRight = right;
             }
+            box.top = mViewBox.top;
+            box.bottom = mViewBox.bottom;
+            box.right = mViewBox.right;
+            box.left = mViewBox.left;
+            box.setCurIndex(index);
 
             LogUtils.d(" rootTreeViewLayout  NodeView = " + next.getName() + " curBox = " + mViewBox.toString() );
 
-            boxHashMap.put(index,mViewBox);
+            boxHashMap.put(index,box);
         }
     }
 
@@ -341,4 +345,7 @@ public class RightTreeLayoutManager implements TreeLayoutManager {
         return maxRight;
     }
 
+    public int getmDy() {
+        return mDy;
+    }
 }

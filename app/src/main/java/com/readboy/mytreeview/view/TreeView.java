@@ -11,6 +11,7 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.readboy.mytreeview.bean.Node;
 import com.readboy.mytreeview.control.MoveAndScaleHandler;
@@ -112,12 +113,6 @@ public class TreeView extends ViewGroup implements ScaleGestureDetector.OnScaleG
             for (Node node : mTreeModel.getRootNode()) {
                 drawTreeLine(canvas,node);
                 ViewBox viewBox = mTreeLayoutManager.onTreeLayoutCallBack();
-
-                //todo Lzy 画出边缘
-                mPaint.setStyle(Paint.Style.STROKE);
-                canvas.drawRect(viewBox.left,viewBox.top,viewBox.right,viewBox.bottom, mPaint);
-                mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-
             }
         }
 
@@ -153,20 +148,7 @@ public class TreeView extends ViewGroup implements ScaleGestureDetector.OnScaleG
 
 
     private void boxCallBackChange() {
-        int dy = dp2px(getContext().getApplicationContext(), 20);
-        int moreWidth = dp2px(getContext().getApplicationContext(), 200);
-
         ViewBox viewBox = mTreeLayoutManager.onTreeLayoutCallBack();
-        ViewBox box = viewBox;
-
-        int w = box.right + dy;
-        int h = box.bottom +Math.abs(box.top);
-
-        //重置View的大小
-        LayoutParams layoutParams = this.getLayoutParams();
-        layoutParams.height = h > getMeasuredHeight() ? h + moreWidth : getMeasuredHeight();
-        layoutParams.width = w > getMeasuredWidth() ? w + moreWidth : getMeasuredWidth();
-        this.setLayoutParams(layoutParams);
         int beforeGap = 0;
 
         List<Node> nodes = getTreeModel().getRootNode();
@@ -174,26 +156,26 @@ public class TreeView extends ViewGroup implements ScaleGestureDetector.OnScaleG
         //移动节点
         for (int i = 0 ; i <  nodes.size(); i++){
             Node node = nodes.get(i);
-            List<Node > nodeList = AtlasUtil.getSubNodeAccordId(mTreeModel.getLinkList(),node.getId(),mTreeModel.getNodeMap());
             int min = findMinTopNode(node);
-            int rootTop = findNodeViewFromNodeModel(node).getTop();
-            LogUtils.d("maxNode = beforeGap2222 =" + min  + "name  = " + node.getName() + ",rootTop = " + rootTop);
-
             //todo Lzy移动根节点，相当于该树所有节点向下移动了该距离
             if(i == 0){
                 moveNodeLayout(this, (NodeView) findNodeViewFromNodeModel(node), Math.abs(min));
                 continue;
             }
-             int curGap =  Math.abs(Math.abs(rootTop ) - Math.abs(min));
-            if(min < ((RightTreeLayoutManager)mTreeLayoutManager).getBoxHashMap().get(i-1).bottom){
-                moveNodeLayout(this, (NodeView) findNodeViewFromNodeModel(node), curGap );
+
+            ViewBox box1 = ((RightTreeLayoutManager)mTreeLayoutManager).getBoxHashMap().get(i-1);
+            LogUtils.d("maxNode = beforeGap =" + box1.toString() + "name  = " + node.getName());
+
+            LogUtils.d("");
+            int curGap =  box1.bottom - min + ((RightTreeLayoutManager)mTreeLayoutManager).getmDy();
+            if(min < box1.bottom){
+                moveNodeLayout(this, (NodeView) findNodeViewFromNodeModel(node), curGap + beforeGap   );
                 beforeGap = curGap + beforeGap;
-                LogUtils.d("maxNode = beforeGap =" +curGap + "name  = " + node.getName());
+               // LogUtils.d("maxNode = beforeGap =" +curGap + "name  = " + node.getName());
 
             }else {
                 LogUtils.d("maxNode = beforeGap =" + beforeGap + "name  = " + node.getName());
-
-                moveNodeLayout(this, (NodeView) findNodeViewFromNodeModel(node), curGap );
+                moveNodeLayout(this, (NodeView) findNodeViewFromNodeModel(node), curGap + beforeGap);
 
             }
         }

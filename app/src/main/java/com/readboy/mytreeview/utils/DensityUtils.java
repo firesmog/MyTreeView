@@ -2,6 +2,7 @@ package com.readboy.mytreeview.utils;
 
 import android.content.Context;
 import android.util.TypedValue;
+import android.view.MotionEvent;
 
 /**
  * 单位转换 工具类<br>
@@ -42,5 +43,7 @@ public class DensityUtils {
         int result = (int) (pxVal / context.getResources().getDisplayMetrics().scaledDensity);
         return result;
     }
+
+
 
 }

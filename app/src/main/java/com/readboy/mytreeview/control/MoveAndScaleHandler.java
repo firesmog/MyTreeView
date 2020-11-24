@@ -1,12 +1,14 @@
 package com.readboy.mytreeview.control;
 
 import android.content.Context;
+import android.util.FloatMath;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 
 import com.nineoldandroids.view.ViewHelper;
+import com.readboy.mytreeview.utils.log.LogUtils;
 
 
 /**
@@ -15,8 +17,8 @@ import com.nineoldandroids.view.ViewHelper;
 
 public class MoveAndScaleHandler implements ScaleGestureDetector.OnScaleGestureListener {
 
-    static final float max_scale = 1.2f;
-    static final float min_scale = 0.3f;
+    static final float max_scale = 1.4f;
+    static final float min_scale = 0.65f;
 
     /**
      * 作用于的View
@@ -30,6 +32,10 @@ public class MoveAndScaleHandler implements ScaleGestureDetector.OnScaleGestureL
 
     private ScaleGestureDetector mScaleGestureDetector;
     private Context mContext;
+    private long beforTime;
+    private float oldDist;
+    private float ratio;
+    private float beforeScale;
 
     public MoveAndScaleHandler(Context context, View view) {
         this.mView = view;
@@ -41,7 +47,7 @@ public class MoveAndScaleHandler implements ScaleGestureDetector.OnScaleGestureL
 
         int currentX = (int) event.getRawX();//获得手指当前的坐标,相对于屏幕
         int currentY = (int) event.getRawY();
-        Log.d("LZY","current onTouchEvent" +         (event.getAction() & MotionEvent.ACTION_MASK));
+
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
                 // 0
             case MotionEvent.ACTION_DOWN:
@@ -58,13 +64,18 @@ public class MoveAndScaleHandler implements ScaleGestureDetector.OnScaleGestureL
                 break;
                 //5
             case MotionEvent.ACTION_POINTER_DOWN:
+                oldDist = spacing(event);//两点按下时的距离
                 mode += 1;
                 break;
                 //2
             case MotionEvent.ACTION_MOVE:
                 if (mode >= 2) {
-                    //todo LZY缩放
-                   // mScaleGestureDetector.onTouchEvent(event);
+                    float newDist = spacing(event);
+                    ratio  = newDist/oldDist;
+                    Log.d("LZY","current new = " + newDist + ", old = " + oldDist + ",ratio = " + ratio);
+                    if ( Math.abs(newDist - oldDist) > 50) {
+                        mScaleGestureDetector.onTouchEvent(event);
+                    }
 
                 } else if (mode == 1) {
                     int deltaX = currentX - lastX;
@@ -101,10 +112,7 @@ public class MoveAndScaleHandler implements ScaleGestureDetector.OnScaleGestureL
     //todo Lzy目前双击放大缩小还未触发这个方法
     @Override
     public boolean onScale(ScaleGestureDetector detector) {
-
-
         float scaleFactor = detector.getScaleFactor();
-        Log.d("LZY","current onScale" +         scaleFactor);
 
         if (scaleFactor >= max_scale) {
             scaleFactor = max_scale;
@@ -113,16 +121,18 @@ public class MoveAndScaleHandler implements ScaleGestureDetector.OnScaleGestureL
             scaleFactor = min_scale;
         }
 
-        float old = mView.getScaleX();
-        if (Math.abs(scaleFactor - old) > 0.6 || Math.abs(scaleFactor - old) < 0.02) {
-            //忽略
-        } else {
-            ViewHelper.setScaleX(mView, scaleFactor);
-            ViewHelper.setScaleY(mView, scaleFactor);
+        if(System.currentTimeMillis() - beforTime > 150){
+            if((ratio > 1 && scaleFactor > beforeScale) || ratio < 1 && scaleFactor < beforeScale){
+                Log.d("LZY","current onScale == " +         scaleFactor);
+                beforTime = System.currentTimeMillis();
+                ViewHelper.setScaleX(mView, scaleFactor);
+                ViewHelper.setScaleY(mView, scaleFactor);
+                beforeScale = scaleFactor;
+            }
         }
-
         return false;
     }
+
 
     @Override
     public boolean onScaleBegin(ScaleGestureDetector detector) {
@@ -132,4 +142,6 @@ public class MoveAndScaleHandler implements ScaleGestureDetector.OnScaleGestureL
     @Override
     public void onScaleEnd(ScaleGestureDetector detector) {
     }
+
+
 }
