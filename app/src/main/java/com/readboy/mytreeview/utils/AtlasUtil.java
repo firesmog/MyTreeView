@@ -1,6 +1,8 @@
 package com.readboy.mytreeview.utils;
 
 
+import android.text.TextUtils;
+
 import com.readboy.mytreeview.bean.AtlasBean;
 import com.readboy.mytreeview.bean.AtlasMapping;
 import com.readboy.mytreeview.bean.AtlasNode;
@@ -10,6 +12,7 @@ import com.readboy.mytreeview.utils.log.LogUtils;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -78,8 +81,11 @@ public class AtlasUtil {
                 nodes.add(nodeMap.get(link.getTargetid()));
             }
         }
+        Collections.sort(nodes,new Node());
         return nodes;
     }
+
+
 
     public static Node getParentNodeAccordId(List<Link> links, long nodeId, HashMap<Long,Node> nodeMap) {
         Node parent = new Node();
@@ -90,6 +96,19 @@ public class AtlasUtil {
             }
         }
         return parent;
+    }
+
+    public static LinkedList<Node> getBrotherNodeAccordId( Node node, HashMap<Long,Node> nodeMap) {
+        LinkedList<Node> brothers = new LinkedList<>();
+        for (Map.Entry<Long, Node> longNodeEntry : nodeMap.entrySet()) {
+            Node brother = longNodeEntry.getValue();
+            if(brother.getFloor() == node.getFloor()){
+                brothers.add(brother);
+            }
+        }
+
+        Collections.sort(brothers,new Node());
+        return brothers;
     }
 
 

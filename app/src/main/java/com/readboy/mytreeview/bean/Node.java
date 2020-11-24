@@ -1,8 +1,9 @@
 package com.readboy.mytreeview.bean;
 
+import java.util.Comparator;
 import java.util.LinkedList;
 
-public class Node {
+public class Node implements Comparator<Node> {
     private String name;
     private Shape shape;
     private double x;
@@ -119,5 +120,16 @@ public class Node {
                 ", focus=" + focus +
                 ", floor=" + floor +
                 '}';
+    }
+
+    @Override
+    public int compare(Node o1, Node o2) {
+        if(o2.getOrder() < o1.getOrder()){
+            return 1;
+        }
+        if(o2.getOrder() > o1.getOrder()){
+            return -1;
+        }
+        return 0;
     }
 }
