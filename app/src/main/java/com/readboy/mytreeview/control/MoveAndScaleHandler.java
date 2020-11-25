@@ -122,7 +122,9 @@ public class MoveAndScaleHandler implements ScaleGestureDetector.OnScaleGestureL
         }
 
         if(System.currentTimeMillis() - beforTime > 150){
-            if((ratio > 1 && scaleFactor > beforeScale) || ratio < 1 && scaleFactor < beforeScale){
+
+            Log.d("LZY","current onScale == " +         ratio + ", scaleFactor =    " + scaleFactor + " , beforeScale = " + beforeScale);
+            if((ratio > 1 && scaleFactor > beforeScale) || ratio < 1 && (scaleFactor < beforeScale || beforeScale == 0)){
                 Log.d("LZY","current onScale == " +         scaleFactor);
                 beforTime = System.currentTimeMillis();
                 ViewHelper.setScaleX(mView, scaleFactor);

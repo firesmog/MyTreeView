@@ -41,6 +41,7 @@ public class NodeView extends RelativeLayout {
 
     private Context context;
     private Node node;
+    private int[] colors;
 
     public Node getNode() {
         return node;
@@ -114,16 +115,19 @@ public class NodeView extends RelativeLayout {
         tvOrder.setText(String.valueOf(order));
         tvOrder.setTextColor(numberColor);
         tvOrder.setTextSize(orderSize);
-        //创建Drawable对象
-        int[] colors = {context.getResources().getColor(R.color.color_31cfff),context.getResources().getColor(R.color.color_0097e6)};
-        GradientDrawable drawable=new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,colors);
+        colors = new int[]{context.getResources().getColor(R.color.color_31cfff), context.getResources().getColor(R.color.color_0097e6)};
 
+        //创建Drawable对象
+       /* if(null != node){
+            String color = node.getShape().getColor();
+            String[] curColors = color.split(",");
+            colors = new int[]{Color.parseColor(curColors[0]), Color.parseColor(curColors[1])};
+        }*/
+        GradientDrawable drawable=new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,colors);
         if(Constants.SHAPE_RECTANGLE.equals(nodeShape)){
             drawable.setShape(RECTANGLE);
-
         }else {
             drawable.setShape(OVAL);
-            drawable.setGradientRadius(nodeRadius);
             tvOrder.setWidth((int) tvOrderWidth);
             tvOrder.setHeight((int) tvOrderWidth);
         }

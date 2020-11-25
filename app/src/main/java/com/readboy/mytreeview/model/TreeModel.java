@@ -156,7 +156,6 @@ public class TreeModel {
         Node parentNode = AtlasUtil.getParentNodeAccordId(linkList,midPreNode.getId(),nodeMap);
 
         if (parentNode != null && !TextUtils.isEmpty(parentNode.getName()) && AtlasUtil.getSubNodeAccordId(linkList,parentNode.getId(),nodeMap).size() >= 2) {
-            Log.d("LZYYYY","midPreNode = " + midPreNode.toString() + ", parent = " + parentNode.toString());
             Deque<Node> queue = new ArrayDeque<>();
             Node rootNode = parentNode;
             queue.add(rootNode);

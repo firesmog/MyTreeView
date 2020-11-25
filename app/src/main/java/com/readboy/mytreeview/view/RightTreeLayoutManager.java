@@ -101,7 +101,7 @@ public class RightTreeLayoutManager implements TreeLayoutManager {
             standardLayout(treeView, (NodeView) view);
         } else if (msg == msg_correct_layout) {
             //纠正
-           //correctLayout(treeView, (NodeView) view,index);
+           correctLayout(treeView, (NodeView) view,index);
         } else if (msg == msg_box_call_back) {
             ViewBox box = new ViewBox();
             //View的大小变化
@@ -152,15 +152,29 @@ public class RightTreeLayoutManager implements TreeLayoutManager {
     public void correctLayout(TreeView treeView, NodeView next,int index) {
 
         TreeModel mTree = treeView.getTreeModel();
+        Node curNode = next.getNode();
+        LinkedList<Node> bros = AtlasUtil.getBrotherNodeAccordId(curNode,mTree.getNodeMap());
         LinkedList<Node> subNodeList = AtlasUtil.getSubNodeAccordId(mTree.getLinkList(),next.getNodeId(),mTree.getNodeMap());
         int count = subNodeList.size();
-        if (next.getParent() != null && count >= 2) {
+        if (next.getParent() != null && count >= 1 && bros.size() > 0) {
+            Node nextBro = getNextBrotherNode(bros,curNode);
+            if(null == nextBro){
+                return;
+            }
+            LinkedList<Node> subBroNodeList = AtlasUtil.getSubNodeAccordId(mTree.getLinkList(),nextBro.getId(),mTree.getNodeMap());
+            if(subBroNodeList.size() < 1){
+                return;
+            }
             Node tn = subNodeList.get(0);
             Node bn = subNodeList.get(count - 1);
-
+            int subBottom = treeView.findNodeViewFromNodeModel(subNodeList.getLast()).getBottom();
+            int broSubBTop = treeView.findNodeViewFromNodeModel(subBroNodeList.getFirst()).getTop();
+            int gap = subBottom - broSubBTop;
             //这里计算的是偏移距离
-            int topDr = next.getTop() - treeView.findNodeViewFromNodeModel(tn).getBottom() + mDy;
-            int bnDr = treeView.findNodeViewFromNodeModel(bn).getTop() - next.getBottom() + mDy;
+            int bnDr = gap + mDy ;
+            if(gap < 0){
+                return;
+            }
 
             //上移动
             ArrayList<Node> allLowNodes = mTree.getAllLowNodes(bn);
@@ -170,16 +184,58 @@ public class RightTreeLayoutManager implements TreeLayoutManager {
                 NodeView view = (NodeView) treeView.findNodeViewFromNodeModel(low);
                 moveNodeLayout(treeView, view, bnDr,index);
             }
-
+/*
             for (Node pre : allPreNodes) {
                 NodeView view = (NodeView) treeView.findNodeViewFromNodeModel(pre);
-                moveNodeLayout(treeView, view, -topDr,index);
+                moveNodeLayout(treeView, view, -gap,index);
 
-            }
+            }*/
         }
     }
 
 
+    /*public void correctLayout(TreeView treeView, NodeView next,int index) {
+        TreeModel mTree = treeView.getTreeModel();
+        Node curNode = next.getNode();
+        LinkedList<Node> bros = AtlasUtil.getBrotherNodeAccordId(curNode,mTree.getNodeMap());
+        LinkedList<Node> subNodeList = AtlasUtil.getSubNodeAccordId(mTree.getLinkList(),next.getNodeId(),mTree.getNodeMap());
+        Node parent = AtlasUtil.getParentNodeAccordId(mTree.getLinkList(),next.getNodeId(),mTree.getNodeMap());
+
+        if(bros.size() <= 1 || subNodeList.size() < 1) {
+            return;
+        }
+
+        Node nextBro = getNextBrotherNode(bros,curNode);
+        if(null == nextBro){
+            return;
+        }
+        LinkedList<Node> subBroNodeList = AtlasUtil.getSubNodeAccordId(mTree.getLinkList(),nextBro.getId(),mTree.getNodeMap());
+        if(subBroNodeList.size() < 1){
+            return;
+        }
+        int subBottom = treeView.findNodeViewFromNodeModel(subNodeList.getLast()).getBottom();
+        int broSubBTop = treeView.findNodeViewFromNodeModel(subBroNodeList.getFirst()).getTop();
+        int gap = subBottom - broSubBTop;
+
+        LogUtils.d("correctLayout gap = " + gap + ", ext = " + next.getName() );
+        if(gap >= 0){
+            moveNodeLayout(treeView,next,gap + mDy,index);
+        }
+
+
+
+    }*/
+
+    private Node getNextBrotherNode(LinkedList<Node> bros,Node curNode){
+        if(bros.size() < 1){
+            return null;
+        }
+        int index = bros.indexOf(curNode);
+        if(index < bros.size() -1){
+            return bros.get(index + 1);
+        }
+        return null;
+    }
 
 
 
